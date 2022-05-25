@@ -11,6 +11,8 @@ Pillow = "^9.1.1"
 numpy = "^1.22.3"
 scipy = "^1.8.1"
 dash = "^2.4.1"
+pandas = "^1.4.2"
+dash-bootstrap-components = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 
