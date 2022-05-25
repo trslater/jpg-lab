@@ -18,3 +18,4 @@ A lab for messing around with JPG compression techniques.
 ## References
 
 -   [The Unreasonable Effectiveness of JPEG: A Signal Processing Approach](https://www.youtube.com/watch?v=0me3guauqOU&t=501s)
+-   [JPEG - Wikipedia](https://en.wikipedia.org/wiki/JPEG#Encoding)
