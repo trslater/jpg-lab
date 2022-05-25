@@ -28,6 +28,12 @@ poetry run python -m jpglab -h
 
 ## Todo
 
+### App
+
+-   [x] Upload images
+
+### Lib
+
 -   [x] Image reading
 -   [x] YCbCr conversion
 -   [x] Downsampling
