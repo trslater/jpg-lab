@@ -6,9 +6,10 @@ authors = ["Tristan Slater <hello@trslater.ca>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.11"
 Pillow = "^9.1.1"
 numpy = "^1.22.3"
+scipy = "^1.8.1"
 
 [tool.poetry.dev-dependencies]
 
