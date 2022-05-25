@@ -5,6 +5,8 @@ import PIL
 from PIL.Image import Image
 from scipy import fft
 
+from . import web
+
 Q = np.array([[16, 11, 10, 16,  24,  40,  51,  61],
               [12, 12, 14, 19,  26,  58,  60,  55],
               [14, 13, 16, 24,  40,  57,  69,  56],
@@ -16,12 +18,16 @@ Q = np.array([[16, 11, 10, 16,  24,  40,  51,  61],
 
 
 def run() -> None:
-    arg_parser = ArgumentParser()
-    arg_parser.add_argument("FILE")
+    arg_parser = ArgumentParser(prog="poetry run python -m jpg_lab")
+    commands = arg_parser.add_subparsers(dest="COMMAND")
+    commands.add_parser("serve", help="Start web app server")
 
     args = arg_parser.parse_args()
+    
+    if args.COMMAND.lower() == "serve":
+        web.serve()
 
-    decoded(*encoded(PIL.Image.open(args.FILE))).show()
+    # decoded(*encoded(PIL.Image.open(args.FILE))).show()
 
 
 def encoded(image: Image) -> tuple[Image]:
