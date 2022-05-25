@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "jpg-lab"
+name = "jpglab"
 version = "0.1.0"
 description = ""
 authors = ["Tristan Slater <hello@trslater.ca>"]
