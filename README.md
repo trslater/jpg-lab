@@ -7,8 +7,13 @@ A lab for messing around with JPG compression techniques.
 -   [x] Image reading
 -   [x] YCbCr conversion
 -   [x] Downsampling
--   [ ] DCT
+-   [x] DCT
 -   [x] Image writing
+-   [ ] Separate encode/decode
+-   [ ] Huffman compression
+-   [ ] Byte layout
+-   [ ] Write own DCT routine
+-   [ ] Write own Huffman routine
 
 ## References
 
