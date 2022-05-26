@@ -1,13 +1,16 @@
 from base64 import b64decode, b64encode
 from io import BytesIO
 
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, State
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import numpy as np
 from PIL import Image
 import plotly.express as px
 import plotly.graph_objects as go
+
+from . import cli
 
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -32,34 +35,70 @@ app.layout = html.Div((
             dcc.Graph(id="spectrum"))))),
 
     # Browser storage
-    dcc.Store(id="img-data"),
+    dcc.Store(id="y-data"),
+    dcc.Store(id="cb-data"),
+    dcc.Store(id="cr-data"),
+    dcc.Store(id="spectrum-data"),
 
     # For throwing unwanted output
     html.Div(id="void", style={"display": "None"})))
 
 
-@app.callback(Output("img-data", "data"),
+@app.callback(Output("y-data", "data"),
+              Output("cb-data", "data"),
+              Output("cr-data", "data"),
+              Output("spectrum-data", "data"),
               Input("upload", "contents"))
-def process(contents):
-    # DEBUG
-    img = Image.open("test_data/Layia_glandulosa_white_layia_flower_bud.png")
-    img_buf = BytesIO()
-    img.save(img_buf, format="PNG")
-    img_str = b64encode(img_buf.getvalue()).decode("ascii")
+def store_image_data(img_data):
+    if not img_data:
+        raise PreventUpdate()
 
-    return img_str
+    img_data = img_data.replace("data:image/png;base64,", "")
+
+    y, cb, cr = Image.open(BytesIO(b64decode(img_data))).convert("YCbCr").split()
+    
+    spectrum_arr = np.array(y, dtype="float")
+    for block in cli.blockized(spectrum_arr):
+        block[:] = cli.spectrum(block)
+        # Normalize
+        block[:] *= 255.0/block.max()
+    spectrum = Image.fromarray(spectrum_arr.astype("byte"), "L")
+
+    y_buf = BytesIO()
+    cb_buf = BytesIO()
+    cr_buf = BytesIO()
+    spectrum_buf = BytesIO()
+
+    y.save(y_buf, format="PNG")
+    cb.save(cb_buf, format="PNG")
+    cr.save(cr_buf, format="PNG")
+    spectrum.save(spectrum_buf, format="PNG")
+
+    y_data = b64encode(y_buf.getvalue()).decode("ascii")
+    cb_data = b64encode(cb_buf.getvalue()).decode("ascii")
+    cr_data = b64encode(cr_buf.getvalue()).decode("ascii")
+    spectrum_data = b64encode(spectrum_buf.getvalue()).decode("ascii")
+
+    return y_data, cb_data, cr_data, spectrum_data
 
 
 @app.callback(Output("image", "figure"),
+              Output("spectrum", "figure"),
               Input("y-on", "on"),
               Input("cb-on", "on"),
               Input("cr-on", "on"),
-              Input("img-data", "data"))
-def update_image(y_is_on, cb_is_on, cr_is_on, img_data):
-    if not img_data:
-        return go.Figure()
+              Input("y-data", "data"),
+              Input("cb-data", "data"),
+              Input("cr-data", "data"),
+              Input("spectrum-data", "data"))
+def update_image(y_is_on, cb_is_on, cr_is_on, y_data, cb_data, cr_data, spectrum_data):
+    if not (y_data and cb_data and cr_data):
+        raise PreventUpdate()
 
-    y, cb, cr = Image.open(BytesIO(b64decode(img_data))).convert("YCbCr").split()
+    y = Image.open(BytesIO(b64decode(y_data)))
+    cb = Image.open(BytesIO(b64decode(cb_data)))
+    cr = Image.open(BytesIO(b64decode(cr_data)))
+    spectrum = Image.open(BytesIO(b64decode(spectrum_data)))
     grey = Image.new("L", (y.width, y.height), 127)
 
     channels = (
@@ -68,7 +107,16 @@ def update_image(y_is_on, cb_is_on, cr_is_on, img_data):
         cr if cr_is_on else grey)
     img = Image.merge("YCbCr", channels)
     
-    return px.imshow(np.array(img.convert("RGB")))
+    image_fig = px.imshow(np.array(img.convert("RGB")))
+    spectrum_fig = px.imshow(np.array(spectrum))
+
+    return image_fig, spectrum_fig
+
+
+# @app.callback(Output("spectrum", "figure"),
+#               Input("image", "relayoutData"))
+# def sync(relayout_data):
+#     return go.Figure()
 
 
 def serve():
