@@ -1,13 +1,15 @@
 // 8x8 RGB pixel blocks take 192 bytes; base64 encoding is 4:3
 const block_size = 256
+const apiURL = "http://localhost:8888"
 
 const fileInput = document.getElementById("image-file")
+const fullImage = document.getElementById("full-image")
 
 fileInput.onchange = async event => {
     const formData = new FormData()
     formData.append("upload", event.target.files[0])
 
-    const response = await fetch("http://localhost:8888/upload", {
+    const response = await fetch(`${apiURL}/upload`, {
         method: "POST",
         body: formData
     })
@@ -25,7 +27,11 @@ fileInput.onchange = async event => {
         // client can read them
         let remaining = value
         while (remaining.length > 0) {
-            console.log(remaining.slice(0, block_size))
+            const image = document.createElement("img")
+            const block = remaining.slice(0, block_size)
+            image.src = `${apiURL}/block.png?s=${encodeURIComponent(block)}`
+            fullImage.append(image)
+
             remaining = remaining.slice(block_size)
         }
     }
