@@ -1,8 +1,10 @@
 from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 
 
-@app.get("/test")
-async def test():
-    return "foo"
+@app.post("/upload")
+async def upload():
+    return StreamingResponse(iter(
+        ("OSUDJCIQ", "BVUQODLK", "SUDHQBVY", "ZXOQPWOI", "IUWRVCBN")))
