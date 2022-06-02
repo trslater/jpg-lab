@@ -4,6 +4,7 @@ const apiURL = "http://localhost:8888"
 
 const fileInput = document.getElementById("image-file")
 const fullImage = document.getElementById("full-image")
+const closeUp = document.getElementById("close-up")
 
 fileInput.onchange = async event => {
     const formData = new FormData()
@@ -30,6 +31,9 @@ fileInput.onchange = async event => {
             const image = document.createElement("img")
             const block = remaining.slice(0, block_size)
             image.src = `${apiURL}/block.png?s=${encodeURIComponent(block)}`
+            image.onmouseover = event => {
+                closeUp.src = event.target.src
+            }
             fullImage.append(image)
 
             remaining = remaining.slice(block_size)

@@ -11,3 +11,8 @@
     outline: 2px solid cyan;
     z-index: 1;
 }
+#close-up {
+    image-rendering: pixelated;
+    width: 256px;
+    height: 256px;
+}
