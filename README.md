@@ -17,28 +17,22 @@ poetry install
 To start the web application:
 
 ```
-poetry run python -m jpglab serve
-```
-
-For more detailed usage instructions:
-
-```
-poetry run python -m jpglab -h
+poetry run uvicorn jpglab.api:app
 ```
 
 ## Todo
 
 ### App
 
--   [x] Upload images
+-   [ ] Upload images
 
 ### Lib
 
--   [x] Image reading
--   [x] YCbCr conversion
--   [x] Downsampling
--   [x] DCT
--   [x] Image writing
+-   [ ] Image reading
+-   [ ] YCbCr conversion
+-   [ ] Downsampling
+-   [ ] DCT
+-   [ ] Image writing
 -   [ ] Separate encode/decode
 -   [ ] Huffman compression
 -   [ ] Byte layout
