@@ -1,8 +1,6 @@
-from base64 import b64decode, b64encode
-from io import BytesIO
-
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, WebSocket
 from fastapi.responses import StreamingResponse
+import numpy as np
 from PIL import Image
 
 app = FastAPI()
@@ -26,24 +24,22 @@ async def upload(upload: UploadFile):
 
 
 def blocks(image):
-    # j comes first, so we get blocks row-by-row
-    for i in range(image.height//BLOCK_SIZE):
-        for j in range(image.width//BLOCK_SIZE):
-            block = image.crop((
-                j*BLOCK_SIZE,
-                i*BLOCK_SIZE,
-                (j + 1)*BLOCK_SIZE,
-                (i + 1)*BLOCK_SIZE))
+    num_cols = image.width//BLOCK_SIZE
+    num_rows = image.height//BLOCK_SIZE
 
-            yield b64encode(block.tobytes())
+    blocks = (
+        np.frombuffer(image.tobytes(), "ubyte")
+        .reshape(num_rows, BLOCK_SIZE, num_cols, BLOCK_SIZE*3)
+        .transpose(0, 2, 1, 3)
+        .reshape(num_rows*num_cols, 3*BLOCK_SIZE**2))
+
+    for i, block in enumerate(blocks):
+        yield i.to_bytes(2, byteorder="big") + block.tobytes()
 
 
-@app.get("/block.png")
-async def block(s: str):
-    image_bytes = b64decode(s)
-    image = Image.frombytes("RGB", (8, 8), image_bytes)
-    stream = BytesIO()
-    image.save(stream, format="png")
-    stream.seek(0)
-
-    return StreamingResponse(stream, media_type="image/png")
+@app.websocket("/block")
+async def block(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_bytes()
+        await websocket.send_bytes(data)
