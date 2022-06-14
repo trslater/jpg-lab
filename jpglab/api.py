@@ -36,8 +36,8 @@ def blocks(image):
         .transpose(0, 2, 1, 3)
         .reshape(num_rows*num_cols, NUM_RGB_CHANNELS*BLOCK_SIZE**2))
 
-    for i, block in enumerate(blocks):
-        yield i.to_bytes(NUM_ID_BITS, byteorder="big") + block.tobytes()
+    for block in blocks:
+        yield block.tobytes()
 
 
 @app.websocket("/block")
